@@ -1,0 +1,66 @@
+---
+# tasks file for roles/deployAppPhp
+
+- name: Update Repository
+  ansible.builtin.copy: 
+    src: files/repositories
+    dest: /etc/apk/repositories
+  become: true
+  when: ansible_facts['distribution'] == 'Alpine'
+
+
+- name: Install apache2 and php debian
+  ansible.builtin.package:
+    name: "{{item}}"
+    state: present
+  loop:
+    - php
+    - php7.3-fpm
+  become: true
+  notify:
+    - restart phpfpm2
+  when: ansible_facts['distribution'] == 'Debian'
+
+
+- name: Install apache2 and php alpine
+  ansible.builtin.package:
+    name: "{{item}}"
+    state: present
+  loop:
+    - apache2
+    - php8
+    - php8-fpm 
+    - apache2-proxy
+  become: true
+  notify:
+    - restart phpfpm
+  when: ansible_facts['distribution'] == 'Alpine'
+
+- name: create folder html
+  file:
+    path: "/var/www/html"
+    state: directory
+    mode: '0755'
+  become: true
+  when : ansible_facts['distribution'] == 'Alpine'
+
+- name: Copy Alpine required configuration
+  ansible.builtin.copy:
+    src: "{{item.src}}" 
+    dest: "{{item.dest}}"
+  become: true
+  loop:
+    - { src: 'files/default.conf', dest: '/etc/apache2/conf.d/default.conf' }
+    - { src: 'files/httpd.conf', dest: '/etc/apache2/httpd.conf' }
+  when: ansible_facts['distribution'] == 'Alpine'
+
+- name: Copy Debian required configuration
+  copy: src="files/000-default.conf" dest="/etc/apache2/sites-available/000-default.conf"
+  become: true
+  when: ansible_facts['distribution'] == "Debian"
+
+- name: Copy Index file
+  copy: src="files/index.php" dest="/var/www/html/index.php"
+  become: true
+  notify: 
+    - restart apache

@@ -1,0 +1,21 @@
+---
+# handlers file for roles/deployAppPhp
+
+
+- name: restart apache
+  service:
+    name: apache2
+    state: restarted
+  become: true
+
+- name: restart phpfpm
+  service:
+    name: php-fpm8
+    state: restarted
+  become: true
+
+- name : restart phpfpm2
+  service:
+    name: php7.3-fpm
+    state: restarted
+  become: true

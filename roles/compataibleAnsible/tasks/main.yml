@@ -1,0 +1,16 @@
+---
+# tasks file for compataibleAnsible
+
+- name: Install apache2
+  ansible.builtin.package:
+    name: apache2
+    state: present
+  become: true
+  notify:
+    - restart apache
+
+- name: Debug
+  ansible.builtin.debug:
+    msg: "{{ansible_facts['distribution']}}"
+  when: ansible_facts['distribution'] == 'Debian'
+
