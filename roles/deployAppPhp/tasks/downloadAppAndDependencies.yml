@@ -1,0 +1,38 @@
+---
+
+- name: clone repository
+  git:
+    repo: https://github.com/kudaliar032/laravel-simple-counter.git
+    dest: /var/www/html/lrvl
+    force: yes
+  become: true
+
+- name: Download and Install all dependency
+  community.general.composer: 
+    command: install
+    working_dir: /var/www/html/lrvl
+    ignore-platform-reqs: true
+  become: true
+
+
+- name: copy environment file
+  shell:
+    chdir: /var/www/html/lrvl
+    cmd: cp .env.example .env
+  become: true
+
+
+- name: change permission
+  file:
+    path: /var/www/html/lrvl/storage
+    mode: '777'
+    state: directory
+    recurse: yes
+  become: true
+
+
+- name: Generate key
+  shell: php  /var/www/html/lrvl/artisan key:generate
+  become: true
+
+

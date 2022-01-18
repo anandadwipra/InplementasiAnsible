@@ -1,0 +1,55 @@
+---
+
+- name: Install dependencies package for minimal webserver in Debian
+  package:
+    name: "{{item}}"
+    state: present
+  loop:
+    - php
+    - php7.3-fpm
+    - composer
+    - git
+    - redis
+    - php7.3-redis
+    - php7.3-dom
+    - php7.3-xml
+    - php7.3-xmlwriter
+    - php7.3-fileinfo
+    - php7.3-mbstring
+  become: true
+  notify:
+    - restart phpfpm2
+    - restart redis
+  when: ansible_facts['distribution'] == 'Debian'
+
+- name: Update Repository
+  copy: 
+    src: files/repositories
+    dest: /etc/apk/repositories
+  become: true
+  when: ansible_facts['distribution'] == 'Alpine'
+
+- name: Install dependencies package for minimal webserver in Alpine
+  package:
+    name: "{{item}}"
+    state: present
+  loop:
+    - apache2
+    - php7
+    - php7-fpm 
+    - php7-dom
+    - php7-openssl
+    - php7-session
+    - php7-redis
+    - php7-xml
+    - php7-xmlwriter
+    - php7-fileinfo
+    - php7-tokenizer
+    - apache2-proxy
+    - composer
+    - git
+    - redis
+  become: true
+  when: ansible_facts['distribution'] == 'Alpine'
+
+

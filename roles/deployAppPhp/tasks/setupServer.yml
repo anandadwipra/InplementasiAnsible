@@ -1,0 +1,23 @@
+---
+
+- name: Copy Debian required configuration
+  copy: src="files/000-default.conf" dest="/etc/apache2/sites-available/000-default.conf"
+  become: true
+  notify: 
+    - restart apache2
+  when: ansible_facts['distribution'] == "Debian"
+
+- name: Copy Alpine required configuration
+  copy:
+    src: "{{item.src}}" 
+    dest: "{{item.dest}}"
+  become: true
+  loop:
+    - { src: 'files/default.conf', dest: '/etc/apache2/conf.d/default.conf' }
+    - { src: 'files/httpd.conf', dest: '/etc/apache2/httpd.conf' }
+  notify: 
+    - restart apache2
+    - restart phpfpm
+    - restart redis
+  when: ansible_facts['distribution'] == 'Alpine'
+

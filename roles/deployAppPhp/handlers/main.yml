@@ -2,7 +2,7 @@
 # handlers file for roles/deployAppPhp
 
 
-- name: restart apache
+- name: restart apache2
   service:
     name: apache2
     state: restarted
@@ -10,7 +10,7 @@
 
 - name: restart phpfpm
   service:
-    name: php-fpm8
+    name: php-fpm7
     state: restarted
   become: true
 
@@ -19,3 +19,15 @@
     name: php7.3-fpm
     state: restarted
   become: true
+
+- name : restart mariadb
+  service:
+    name: mariadb
+    state: restarted
+  become: true
+
+- name : restart redis
+  service:
+    name: redis
+    state: restarted
+  become: true 
