@@ -1,0 +1,67 @@
+---
+# tasks file for roles/deployAppNodeJs
+
+- name: Update Repository
+  copy:
+    src: files/repositories
+    dest: /etc/apk/repositories
+  become: true
+  when: ansible_facts['distribution'] == 'Alpine'
+
+
+- name: Install dependencies package for minimal Node Js Server
+  package:
+    name: "{{item}}"
+    state: present
+  become: true
+  loop:
+    - nodejs
+    - gnupg
+    - curl
+  when: ansible_facts['distribution'] == 'Debian'
+
+- name: Update Repository and install yarn 
+  shell:
+    cmd: curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add - && echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list && sudo apt update && sudo apt install --no-install-recommends yarn
+  become: true
+  when: ansible_facts['distribution'] == 'Debian'
+
+- name: Install dependencies package for minimal Node Js server
+  package:
+    name: "{{item}}"
+    state: present
+  loop:
+    - nodejs
+    - yarn
+  become: true
+  when: ansible_facts['distribution'] == 'Alpine'
+
+- name: Copy Js App
+  copy:
+    src: "{{item.src}}"
+    dest: "{{item.dest}}"
+  loop:
+    - {src: 'files/package.json', dest: '/var/www/package.json'}
+    - {src: 'files/package-lock.json', dest: '/var/www/package-lock.json'}
+    - {src: 'files/index.js',dest: '/var/www/index.js'}
+  become: true
+
+- name: install pm2
+  community.general.yarn:
+    name: pm2
+    global: yes
+    state: latest
+  become: true
+
+- name: install nodejs app dependencies
+  community.general.yarn:
+    path: "/var/www"
+  become: true
+
+- name: Run NodeJs APP
+  shell: 
+    cmd: /usr/local/bin/pm2 start index.js
+    chdir: "/var/www"
+  become: true
+
+
